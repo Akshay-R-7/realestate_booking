@@ -19,7 +19,7 @@ import {
   signOutUserSuccess,
 } from "../redux/user/userSlice.js";
 import { useDispatch } from "react-redux";
-import {Link} from 'react-router-dom'
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const fileRef = useRef(null);
@@ -29,6 +29,8 @@ export default function Profile() {
   const [fileError, setFileError] = useState(false);
   const [formData, setFormData] = useState({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showListingsError, setListingsError] = useState(false);
+  const [userListings, setUserListings] = useState([]);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -107,13 +109,28 @@ export default function Profile() {
       dispatch(signOutUserStart());
       const res = await fetch("/api/auth/signout");
       const data = await res.json();
-      if(data.success === false) {
+      if (data.success === false) {
         dispatch(signOutUserFailure(data.message));
         return;
       }
-      dispatch(signOutUserSuccess(data))
+      dispatch(signOutUserSuccess(data));
     } catch (error) {
       dispatch(signOutUserFailure(error.message));
+    }
+  };
+
+  const handleShowListings = async () => {
+    try {
+      setListingsError(false);
+      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+      const data = await res.json();
+      if (data.success === false) {
+        setListingsError(true);
+        return;
+      }
+      setUserListings(data);
+    } catch (err) {
+      setListingsError(true);
     }
   };
   return (
@@ -175,7 +192,10 @@ export default function Profile() {
         >
           {loading ? "Loading..." : "Update"}
         </button>
-        <Link to={'/create-listing'} className="bg-green-700 p-3 rounded-lg uppercase text-white text-center hover:opacity-95">
+        <Link
+          to={"/create-listing"}
+          className="bg-green-700 p-3 rounded-lg uppercase text-white text-center hover:opacity-95"
+        >
           Create Listing
         </Link>
       </form>
@@ -196,6 +216,40 @@ export default function Profile() {
       <p className="text-green-700 mt-5">
         {updateSuccess ? "User is updated Successfully!" : ""}
       </p>
+      <button onClick={handleShowListings} className="text-green-700 w-full">
+        {showListingsError
+          ? "Error occured while showing listings"
+          : "Show Listings"}
+      </button>
+      {userListings &&
+        userListings.length > 0 &&
+        <div className="flex flex-col gap-4">
+          <h1 className="text-center my-7 text-2xl font-semibold">Your Listings</h1>
+        {userListings.map((listing) => (
+          <div
+            key={listing._id}
+            className="border rounded-lg p-3 flex justify-between items-center gap-4"
+          >
+            <Link to={`/listing.${listing._id}`}>
+              <img
+                src={listing.imageUrls[0]}
+                alt="Listing Cover"
+                className="h-16 w-16 object-contain"
+              />
+            </Link>
+            <Link
+              to={`/listing.${listing._id}`}
+              className="text-slate-700 font-semibold flex-1 hover:underline truncate"
+            >
+              <p>{listing.name}</p>
+            </Link>
+            <div className="flex flex-col gap-2 flex-1 items-center">
+              <button className="text-red-700">Delete</button>
+              <button className="text-green-700">Edit</button>
+            </div>
+          </div>
+        ))}
+        </div>}
     </div>
   );
 }
