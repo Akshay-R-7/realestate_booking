@@ -10,7 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^5.16.6",
+    "@mui/x-charts": "^7.11.1",
     "@reduxjs/toolkit": "^2.2.6",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "firebase": "^10.12.3",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.2",
